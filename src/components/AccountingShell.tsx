@@ -22,6 +22,7 @@ const NAV = [
   {
     title: 'Finance',
     items: [
+      { href: '/accounting/ledger',   icon: '⊞', label: 'General Ledger' },
       { href: '/accounting/coa',      icon: '≡', label: 'Chart of Accounts' },
       { href: '/accounting/journal',  icon: '⊟', label: 'Journal Entries' },
       { href: '/accounting/reconcile',icon: '⇌', label: 'Reconciliation' },
