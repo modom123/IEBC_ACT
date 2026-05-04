@@ -66,7 +66,7 @@ export async function POST(req: Request) {
         customer: customer.id,
         payment_method_types: ['card'],
         line_items: lineItems,
-        subscription_data: { trial_period_days: 7, metadata: { plan } },
+        subscription_data: { trial_period_days: 30, metadata: { plan } },
         billing_address_collection: 'required',
         customer_update: { name: 'auto', address: 'auto' },
         metadata: { plan, customer_email: email, business_name: business_name || '', lead_id },
@@ -98,8 +98,8 @@ export async function POST(req: Request) {
         body: JSON.stringify({
           from: 'IEBC Team <outreach@iebusinessconsultants.com>',
           to: email,
-          subject: `Your Efficient ${planLabel} plan is ready — start your 7-day free trial`,
-          text: `Hi ${firstName},\n\nYour Efficient ${planLabel} plan (${PLAN_PRICE[plan]}) is ready.\n\nClick below to start your 7-day free trial — no charge until day 8:\n\n${checkoutUrl}\n\nBest,\nIEBC Team`,
+          subject: `Your Efficient ${planLabel} plan is ready — start your 30-day free trial`,
+          text: `Hi ${firstName},\n\nYour Efficient ${planLabel} plan (${PLAN_PRICE[plan]}) is ready.\n\nClick below to start your 30-day free trial — no charge until day 31:\n\n${checkoutUrl}\n\nBest,\nIEBC Team`,
           html: `
 <!DOCTYPE html>
 <html>
@@ -117,7 +117,7 @@ export async function POST(req: Request) {
       <h1 style="color:#0B2140;font-size:22px;font-weight:800;margin:0 0 6px;">Hi ${firstName}, your offer is ready</h1>
       <p style="color:#64748b;font-size:15px;line-height:1.6;margin:0 0 24px;">
         We've reserved a spot on the <strong style="color:#0B2140;">Efficient ${planLabel}</strong> plan for ${business_name || 'you'} — ${PLAN_PRICE[plan]}/month.
-        Start your <strong>7-day free trial</strong> today. No charge until day 8, cancel anytime.
+        Start your <strong>30-day free trial</strong> today. No charge until day 31, cancel anytime.
       </p>
       <a href="${checkoutUrl}"
          style="display:inline-block;background:linear-gradient(135deg,#0B2140,#17377A);color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;margin-bottom:28px;">

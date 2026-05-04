@@ -217,7 +217,7 @@ function CheckoutContent() {
             <span className="text-xl shrink-0 mt-0.5">🔒</span>
             <div>
               <p className="font-bold mb-0.5">A subscription is required to access Efficient</p>
-              <p className="text-white/70 text-xs">Choose a plan below to get started — all plans include a 7-day free trial with no charge until day 8.</p>
+              <p className="text-white/70 text-xs">Choose a plan below to get started — all plans include a 30-day free trial with no charge until day 31.</p>
             </div>
           </div>
         )}
@@ -234,7 +234,7 @@ function CheckoutContent() {
             <div className="text-center mb-10">
               <p className="text-xs font-bold text-[#C9A02E] uppercase tracking-widest mb-2">Step 1 of 3</p>
               <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Choose your plan</h1>
-              <p className="text-gray-500">All plans include a <span className="font-semibold text-gray-700">7-day free trial</span>. No charge until day 8.</p>
+              <p className="text-gray-500">All plans include a <span className="font-semibold text-gray-700">30-day free trial</span>. No charge until day 31.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -302,7 +302,7 @@ function CheckoutContent() {
               </button>
             </div>
             <p className="text-center text-xs text-gray-400 mt-4">
-              7-day free trial · No charge until day 8 · Cancel anytime
+              30-day free trial · No charge until day 31 · Cancel anytime
             </p>
           </>
         )}
@@ -399,7 +399,7 @@ function CheckoutContent() {
                   {loading ? 'Redirecting to payment...' : `Continue to Payment — ${plan.price}/mo after trial`}
                 </button>
                 <p className="text-center text-xs text-gray-400 mt-3">
-                  Secure checkout via Stripe · 7-day free trial · Cancel anytime
+                  Secure checkout via Stripe · 30-day free trial · Cancel anytime
                 </p>
               </div>
             </form>

@@ -22,7 +22,7 @@ const TEMPLATES = [
 
 I came across {business} and wanted to reach out directly. At IEBC we help businesses like yours build the financial infrastructure they need to scale — without the enterprise price tag.
 
-We offer a full accounting & invoicing suite, AI receipt scanning, bank sync, cash flow forecasting, and more — all starting at $9/month with a 7-day free trial.
+We offer a full accounting & invoicing suite, AI receipt scanning, bank sync, cash flow forecasting, and more — all starting at $9/month with a 30-day free trial.
 
 Would you be open to a quick 15-minute call this week?
 
@@ -48,7 +48,7 @@ IEBC Team`,
   {
     id: 'proposal',
     label: 'Send Offer',
-    subject: 'Your Efficient plan offer — 7-day free trial inside',
+    subject: 'Your Efficient plan offer — 30-day free trial inside',
     body: `Hi {name},
 
 Based on what I know about {business}, I'd recommend our Gold plan ($22/mo) which includes:
@@ -58,7 +58,7 @@ Based on what I know about {business}, I'd recommend our Gold plan ($22/mo) whic
 • Bank reconciliation & auto-categorization
 • Cash flow forecasting & financial reports
 
-You can start a 7-day free trial — no charge until day 8, cancel anytime:
+You can start a 30-day free trial — no charge until day 31, cancel anytime:
 https://iebusinessconsultants.com/accounting/checkout?plan=gold
 
 Happy to answer any questions. Just reply here.

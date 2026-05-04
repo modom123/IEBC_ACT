@@ -70,7 +70,7 @@ const STATS = [
   { value: '5', label: 'core services' },
   { value: '60', label: 'AI consultants on demand' },
   { value: '25+', label: 'infrastructure modules' },
-  { value: '7-day', label: 'free trial on all plans' },
+  { value: '30-day', label: 'free trial on all plans' },
 ]
 
 const PLANS = [
