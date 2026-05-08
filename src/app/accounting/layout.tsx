@@ -10,12 +10,16 @@ export default async function AccountingLayout({ children }: { children: React.R
       const supabase = createServerSupabaseClient()
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('full_name, role')
-          .eq('id', session.user.id)
-          .single()
-        user = { name: profile?.full_name, email: session.user.email, role: profile?.role }
+        const [{ data: profile }, { data: sub }] = await Promise.all([
+          supabase.from('profiles').select('full_name, role').eq('id', session.user.id).single(),
+          supabase.from('subscriptions').select('plan, status').eq('user_id', session.user.id).maybeSingle(),
+        ])
+        user = {
+          name: profile?.full_name,
+          email: session.user.email,
+          role: profile?.role,
+          plan: sub?.plan ?? 'silver',
+        }
       }
     }
   } catch { /* Supabase not configured */ }

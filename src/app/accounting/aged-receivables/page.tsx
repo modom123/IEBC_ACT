@@ -162,6 +162,7 @@ export default function AgedReceivablesPage() {
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {toastId && (
         <div className="fixed top-4 right-4 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-xl shadow-lg text-sm font-medium animate-in slide-in-from-right">
+        <div className="fixed top-4 right-4 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-xl shadow-lg text-sm font-medium">
           Reminder sent to client
         </div>
       )}
@@ -175,7 +176,7 @@ export default function AgedReceivablesPage() {
           onClick={() => window.print()}
           className="flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 px-4 py-2 rounded-xl text-sm font-semibold transition"
         >
-          <span>⊡</span> Export / Print
+          <span>⊟</span> Export / Print
         </button>
       </div>
 
