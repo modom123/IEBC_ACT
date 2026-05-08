@@ -53,7 +53,7 @@ I wanted to follow up regarding your interest in Efficient by IEBC — our all-i
 
 We've helped businesses like ${lead.business_name} streamline their accounting, automate invoicing, and get real-time visibility into cash flow — all for as little as $9/month.
 
-I'd love to show you a quick demo or answer any questions you might have. We also offer a 7-day free trial so you can explore with zero risk.
+I'd love to show you a quick demo or answer any questions you might have. We also offer a 30-day free trial so you can explore with zero risk.
 
 Would you be available for a quick 15-minute call this week?
 
@@ -472,7 +472,7 @@ export default function LeadsPage() {
             </div>
             <div className="p-6 space-y-4">
               <p className="text-sm text-gray-600">
-                Select a plan. We&apos;ll generate a personalised Stripe checkout link (7-day free trial) and email it directly to the lead.
+                Select a plan. We&apos;ll generate a personalised Stripe checkout link (30-day free trial) and email it directly to the lead.
               </p>
 
               {/* Plan cards */}

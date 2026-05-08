@@ -28,6 +28,7 @@ export default async function SettingsPage() {
     supabase.from('subscriptions').select('*').eq('user_id', session.user.id).maybeSingle(),
   ])
 
+  const isInternal = profile?.role === 'admin' || profile?.role === 'iebc_staff'
   const tier = sub?.plan ? TIER_INFO[sub.plan] : null
 
   return (
@@ -64,7 +65,18 @@ export default async function SettingsPage() {
         {/* Subscription */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <h2 className="font-bold text-gray-800 mb-4">Subscription</h2>
-          {sub && tier ? (
+          {isInternal ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="px-3 py-1 rounded-full font-bold text-sm uppercase bg-blue-100 text-[#0F4C81]">Platinum</span>
+                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">active</span>
+                <span className="text-sm text-gray-500">Internal — No charge</span>
+              </div>
+              <p className="text-sm text-gray-500">
+                Phantom internal access — full platform included for IEBC staff.
+              </p>
+            </div>
+          ) : sub && tier ? (
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <span className={`px-3 py-1 rounded-full font-bold text-sm uppercase ${tier.color}`}>{tier.label}</span>

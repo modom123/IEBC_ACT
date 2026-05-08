@@ -55,24 +55,27 @@ export default async function Hub() {
     supabase.from('consultant_assignments').select('consultant_id, department').eq('user_id', userId),
     supabase.from('leads').select('id, business_name, heat, status, est_value').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
     supabase.from('tasks').select('id, title, status, priority, due_date').eq('user_id', userId).neq('status', 'done').order('created_at', { ascending: false }).limit(5),
-    supabase.from('profiles').select('full_name').eq('id', userId).single(),
+    supabase.from('profiles').select('full_name, role').eq('id', userId).single(),
     supabase.from('transactions').select('type, amount').eq('user_id', userId),
     supabase.from('transactions').select('type, amount').eq('user_id', userId).gte('date', firstOfMonth),
     supabase.from('transactions').select('date, type, amount, category').eq('user_id', userId).gte('date', sixMonthsAgo),
     supabase.from('invoices').select('status, total, amount_paid').eq('user_id', userId),
     supabase.from('transactions').select('*').eq('user_id', userId).order('date', { ascending: false }).limit(6),
-    supabase.from('bills').select('amount, due_date, status').eq('user_id', userId).eq('status', 'unpaid').order('due_date').limit(4),
+    supabase.from('bills').select('amount, due_date, status').eq('user_id', userId).eq('status', 'unpaid').order('due_date'),
     supabase.from('tax_obligations').select('amount, due_date, status').eq('user_id', userId).neq('status', 'paid'),
   ])
 
   // — Accounting metrics —
-  const totalIncome    = (txAll || []).filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
-  const totalExpenses  = (txAll || []).filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
-  const netProfit      = totalIncome - totalExpenses
-  const monthIncome    = (txMonth || []).filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
-  const monthExpenses  = (txMonth || []).filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
-  const outstanding    = (invoices || []).filter(i => i.status !== 'paid' && i.status !== 'void').reduce((s, i) => s + (Number(i.total) - Number(i.amount_paid)), 0)
-  const overdueInvoices = (invoices || []).filter(i => i.status === 'overdue').length
+  const totalIncome      = (txAll || []).filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
+  const totalExpenses    = (txAll || []).filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
+  const totalUnpaidBills = (bills || []).reduce((s, b) => s + Number(b.amount), 0)
+  const netProfit        = totalIncome - totalExpenses
+  const grandNet         = netProfit - totalUnpaidBills
+  const monthIncome      = (txMonth || []).filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
+  const monthExpenses    = (txMonth || []).filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
+  const outstanding      = (invoices || []).filter(i => i.status !== 'paid' && i.status !== 'void').reduce((s, i) => s + (Number(i.total) - Number(i.amount_paid)), 0)
+  const overdueInvoices  = (invoices || []).filter(i => i.status === 'overdue').length
+  const isInternal       = profile?.role === 'admin' || profile?.role === 'iebc_staff'
 
   // — Charts —
   const monthlyMap: Record<string, { income: number; expenses: number }> = {}
@@ -124,14 +127,19 @@ export default async function Hub() {
             <p className="text-gray-400 text-sm mt-0.5">{session.user.email}</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {tier && (
+            {isInternal ? (
+              <span className="px-3 py-1 rounded-full font-bold text-xs uppercase tracking-wide bg-blue-50 text-[#0F4C81]">
+                Platinum · Internal
+              </span>
+            ) : tier ? (
               <span className={`px-3 py-1 rounded-full font-bold text-xs uppercase tracking-wide ${tier.color}`}>
                 {tier.label} · {tier.price}
               </span>
+            ) : (
+              <Link href="/accounting/checkout" className="bg-[#C9A02E] hover:bg-yellow-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm">
+                ★ Upgrade
+              </Link>
             )}
-            <Link href="/accounting/checkout" className="bg-[#C9A02E] hover:bg-yellow-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm">
-              ★ Upgrade
-            </Link>
           </div>
         </div>
 
@@ -162,12 +170,13 @@ export default async function Hub() {
         {/* ── Financial KPIs ── */}
         <div>
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Financials</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {[
-              { label: 'Revenue This Month', value: fmtShort(monthIncome),   sub: `${fmtShort(totalIncome)} all-time`,          color: 'text-green-700',  href: '/accounting/transactions' },
-              { label: 'Expenses This Month', value: fmtShort(monthExpenses), sub: `${fmtShort(totalExpenses)} all-time`,        color: 'text-red-600',    href: '/accounting/transactions' },
-              { label: 'Net Profit',          value: fmtShort(netProfit),     sub: netProfit >= 0 ? 'Profitable' : 'Net loss',   color: netProfit >= 0 ? 'text-green-700' : 'text-red-600', href: '/accounting/reports' },
-              { label: 'Outstanding AR',      value: fmtShort(outstanding),   sub: overdueInvoices > 0 ? `${overdueInvoices} overdue` : 'No overdue', color: outstanding > 0 ? 'text-orange-600' : 'text-gray-500', href: '/accounting/invoices' },
+              { label: 'Revenue This Month',  value: fmtShort(monthIncome),        sub: `${fmtShort(totalIncome)} all-time`,          color: 'text-green-700',  href: '/accounting/transactions' },
+              { label: 'Expenses This Month', value: fmtShort(monthExpenses),       sub: `${fmtShort(totalExpenses)} all-time`,        color: 'text-red-600',    href: '/accounting/transactions' },
+              { label: 'Accounts Payable',    value: fmtShort(totalUnpaidBills),    sub: totalUnpaidBills > 0 ? 'unpaid bills' : 'All bills paid', color: totalUnpaidBills > 0 ? 'text-orange-500' : 'text-gray-400', href: '/accounting/bills' },
+              { label: 'Net Profit',          value: fmtShort(netProfit),           sub: netProfit >= 0 ? 'Before bills' : 'Net loss', color: netProfit >= 0 ? 'text-green-700' : 'text-red-600', href: '/accounting/reports' },
+              { label: 'Grand Net',           value: fmtShort(grandNet),            sub: 'After all obligations',                       color: grandNet >= 0 ? 'text-green-700' : 'text-red-600', href: '/accounting/ledger' },
             ].map((c, i) => (
               <Link key={i} href={c.href} className="bg-white p-3 sm:p-5 rounded-xl border border-gray-200 hover:border-[#0F4C81] hover:shadow-sm transition">
                 <p className="text-[10px] sm:text-xs text-gray-500 font-medium uppercase tracking-wide truncate">{c.label}</p>
@@ -283,7 +292,8 @@ export default async function Hub() {
               { href: '/accounting/journal',       icon: '📝', label: 'Journal Entries' },
               { href: '/accounting/aged-receivables', icon: '⏱️', label: 'Aged Receivables' },
               { href: '/accounting/rules',         icon: '⚡', label: 'Auto Rules' },
-              { href: '/accounting/coa',           icon: '📒', label: 'Chart of Accounts' },
+              { href: '/accounting/ledger',         icon: '📒', label: 'General Ledger' },
+              { href: '/accounting/coa',           icon: '≡',  label: 'Chart of Accounts' },
               { href: '/accounting/audit',         icon: '🔒', label: 'Audit Trail' },
               { href: '/api/export?type=transactions', icon: '⬇️', label: 'Export CSV' },
               { href: '/hub/consultants',          icon: '🤖', label: 'AI Consultants' },
@@ -383,7 +393,7 @@ export default async function Hub() {
                   <Link href="/accounting/bills" className="text-sm text-[#0F4C81] hover:underline">Manage</Link>
                 </div>
                 <div className="p-4 space-y-2">
-                  {bills.map((b, i) => (
+                  {bills.slice(0, 4).map((b, i) => (
                     <div key={i} className="flex justify-between text-sm">
                       <span className={`text-gray-500 text-xs ${b.due_date < todayStr ? 'text-red-500 font-medium' : ''}`}>{b.due_date}</span>
                       <span className="font-semibold text-red-600 text-xs">{fmt(b.amount)}</span>
@@ -472,7 +482,16 @@ export default async function Hub() {
           <div className="space-y-4">
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
               <h2 className="font-bold text-gray-800 mb-3">Subscription</h2>
-              {sub && tier ? (
+              {isInternal ? (
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-2 items-center">
+                    <span className="px-3 py-1 rounded-full font-bold text-xs uppercase bg-blue-100 text-[#0F4C81]">Platinum</span>
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">active</span>
+                    <span className="text-xs text-gray-500">Internal — No charge</span>
+                  </div>
+                  <p className="text-xs text-gray-400">Phantom internal access — full platform included for IEBC staff.</p>
+                </div>
+              ) : sub && tier ? (
                 <div className="space-y-2">
                   <div className="flex flex-wrap gap-2 items-center">
                     <span className={`px-3 py-1 rounded-full font-bold text-xs uppercase ${tier.color}`}>{tier.label}</span>

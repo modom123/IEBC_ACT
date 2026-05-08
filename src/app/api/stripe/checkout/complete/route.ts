@@ -117,7 +117,7 @@ export async function POST(req: Request) {
       stripe_subscription_id: stripeSubId,
       stripe_customer_id: stripeCustomerId,
       status: 'trialing',
-      current_period_end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id' })
 

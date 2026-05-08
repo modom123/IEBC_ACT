@@ -169,7 +169,7 @@ function SuccessContent() {
           <h1 className="text-3xl font-extrabold text-gray-900 mb-1">You&apos;re all set!</h1>
           {plan && (
             <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-[#0F4C81] text-white mb-2">
-              {PLAN_LABELS[plan] || plan} Plan — 7-day free trial started
+              {PLAN_LABELS[plan] || plan} Plan — 30-day free trial started
             </span>
           )}
           <p className="text-gray-500 text-sm">Your account has been created. Save your credentials below.</p>

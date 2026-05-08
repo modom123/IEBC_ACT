@@ -77,7 +77,7 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-lg font-bold text-gray-900 mb-3">5. Subscription & Billing</h2>
             <ul className="list-disc list-inside space-y-1">
-              <li>All plans include a 7-day free trial. No charge occurs until day 8.</li>
+              <li>All plans include a 30-day free trial. No charge occurs until day 31.</li>
               <li>Subscriptions are billed monthly in advance via Stripe.</li>
               <li>You may cancel anytime; cancellation takes effect at the end of your current billing period.</li>
               <li>We do not issue refunds for partial months, except where required by law.</li>

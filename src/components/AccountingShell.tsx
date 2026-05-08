@@ -22,6 +22,7 @@ const NAV = [
   {
     title: 'Finance',
     items: [
+      { href: '/accounting/ledger',   icon: '⊞', label: 'General Ledger' },
       { href: '/accounting/coa',      icon: '≡', label: 'Chart of Accounts' },
       { href: '/accounting/journal',  icon: '⊟', label: 'Journal Entries' },
       { href: '/accounting/reconcile',icon: '⇌', label: 'Reconciliation' },
@@ -69,10 +70,17 @@ export default function AccountingShell({ user, children }: { user?: User; child
 
   const Sidebar = () => (
     <aside className="w-56 flex flex-col bg-white border-r border-gray-200 h-full">
+      {/* Back to Phantom */}
+      <Link href="/hub"
+        className="flex items-center gap-2 px-4 py-2 bg-[#0a3060] hover:bg-[#082248] transition-colors shrink-0 group">
+        <span className="text-blue-300 group-hover:text-white text-sm leading-none">←</span>
+        <span className="text-blue-200 group-hover:text-white text-[11px] font-semibold tracking-wide uppercase">Phantom</span>
+      </Link>
+
       {/* Logo */}
-      <div className="h-14 bg-[#0F4C81] flex items-center px-4 gap-2.5 shrink-0">
-        <div className="w-8 h-8 bg-[#C8902A] rounded-lg flex items-center justify-center shrink-0">
-          <span className="text-white font-black text-[11px] tracking-tight">IEBC</span>
+      <div className="h-12 bg-[#0F4C81] flex items-center px-4 gap-2.5 shrink-0">
+        <div className="w-7 h-7 bg-[#C8902A] rounded-lg flex items-center justify-center shrink-0">
+          <span className="text-white font-black text-[10px] tracking-tight">IEBC</span>
         </div>
         <div className="leading-tight">
           <p className="text-white font-bold text-sm">Efficient</p>
@@ -107,12 +115,6 @@ export default function AccountingShell({ user, children }: { user?: User; child
 
       {/* Footer */}
       <div className="shrink-0 border-t border-gray-100 p-2 space-y-1">
-        {isAdmin && (
-          <Link href="/hub" className="flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[13px] text-gray-600 hover:bg-gray-50 border-l-[3px] border-transparent transition-all">
-            <span className="text-[15px] text-gray-400 w-4 text-center">⊞</span>
-            <span>Master Hub</span>
-          </Link>
-        )}
         <Link href="/settings" onClick={() => setMobileOpen(false)}
           className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[13px] transition-all ${
             pathname.startsWith('/settings') ? 'bg-blue-50 text-[#0F4C81] font-semibold border-l-[3px] border-[#0F4C81]' : 'text-gray-600 hover:bg-gray-50 border-l-[3px] border-transparent'
@@ -157,6 +159,10 @@ export default function AccountingShell({ user, children }: { user?: User; child
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
             </svg>
           </button>
+          {/* Phantom back link — mobile only (desktop uses sidebar) */}
+          <Link href="/hub" className="lg:hidden flex items-center gap-1.5 text-xs font-semibold text-[#0F4C81] hover:text-[#082D4F] transition">
+            ← Phantom
+          </Link>
           <div className="flex-1 hidden sm:flex items-center gap-1.5 text-xs text-gray-400">
             {activeSection && <span>{activeSection.title}</span>}
             {activeSection && <span>/</span>}

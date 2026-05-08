@@ -45,7 +45,9 @@ export default async function Accounting() {
 
   const totalIncome = (txAll || []).filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
   const totalExpenses = (txAll || []).filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
+  const totalUnpaidBills = (bills || []).reduce((s, b) => s + Number(b.amount), 0)
   const netProfit = totalIncome - totalExpenses
+  const grandNet = netProfit - totalUnpaidBills
   const monthIncome = (txMonth || []).filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
   const monthExpenses = (txMonth || []).filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
 
@@ -117,12 +119,13 @@ export default async function Accounting() {
         )}
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {[
-            { label: 'Total Revenue',   value: fmt(totalIncome),   sub: `${fmt(monthIncome)} this month`,   color: 'text-green-700',  icon: '↑', iconCls: 'text-green-500 bg-green-50' },
-            { label: 'Total Expenses',  value: fmt(totalExpenses), sub: `${fmt(monthExpenses)} this month`, color: 'text-red-600',    icon: '↓', iconCls: 'text-red-500 bg-red-50' },
-            { label: 'Net Profit',      value: fmt(netProfit),     sub: netProfit >= 0 ? 'Profitable' : 'Net loss', color: netProfit >= 0 ? 'text-green-700' : 'text-red-600', icon: netProfit >= 0 ? '=' : '!', iconCls: netProfit >= 0 ? 'text-green-500 bg-green-50' : 'text-red-500 bg-red-50' },
-            { label: 'Outstanding AR',  value: fmt(outstanding),   sub: overdueCount > 0 ? `${overdueCount} overdue` : 'No overdue', color: outstanding > 0 ? 'text-orange-600' : 'text-gray-700', icon: '◷', iconCls: outstanding > 0 ? 'text-orange-500 bg-orange-50' : 'text-gray-400 bg-gray-100' },
+            { label: 'Total Revenue',     value: fmt(totalIncome),   sub: `${fmt(monthIncome)} this month`,   color: 'text-green-700',  icon: '↑', iconCls: 'text-green-500 bg-green-50' },
+            { label: 'Total Expenses',    value: fmt(totalExpenses), sub: `${fmt(monthExpenses)} this month`, color: 'text-red-600',    icon: '↓', iconCls: 'text-red-500 bg-red-50' },
+            { label: 'Accounts Payable',  value: fmt(totalUnpaidBills), sub: totalUnpaidBills > 0 ? 'unpaid bills' : 'All bills paid', color: totalUnpaidBills > 0 ? 'text-orange-600' : 'text-gray-500', icon: '⊠', iconCls: totalUnpaidBills > 0 ? 'text-orange-500 bg-orange-50' : 'text-gray-400 bg-gray-100' },
+            { label: 'Net Profit',        value: fmt(netProfit),     sub: netProfit >= 0 ? 'Before bills' : 'Net loss', color: netProfit >= 0 ? 'text-green-700' : 'text-red-600', icon: netProfit >= 0 ? '=' : '!', iconCls: netProfit >= 0 ? 'text-green-500 bg-green-50' : 'text-red-500 bg-red-50' },
+            { label: 'Grand Net',         value: fmt(grandNet),      sub: 'After all obligations', color: grandNet >= 0 ? 'text-green-700' : 'text-red-600', icon: '★', iconCls: grandNet >= 0 ? 'text-green-500 bg-green-50' : 'text-red-500 bg-red-50' },
           ].map((card, i) => (
             <div key={i} className="bg-white p-3 sm:p-5 rounded-xl border border-gray-200 shadow-sm">
               <div className="flex items-start justify-between mb-2">
@@ -187,6 +190,7 @@ export default async function Accounting() {
             { href: '/accounting/inventory', icon: '🗃️', label: 'Inventory' },
             { href: '/accounting/connect', icon: '🏦', label: 'Connect Bank' },
             { href: '/accounting/clients', icon: '🔗', label: 'Client Portals' },
+            { href: '/accounting/ledger',  icon: '📒', label: 'General Ledger' },
             { href: '/accounting/reports', icon: '📊', label: 'Reports' },
           ].map(({ href, icon, label }) => (
             <Link key={href} href={href}

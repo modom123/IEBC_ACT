@@ -123,16 +123,26 @@ export async function middleware(request: NextRequest) {
     // ── Subscription gate for /accounting ────────────────────────────
     // Require an active/trialing/past_due subscription for all accounting
     // pages. Checkout itself is already exempted above via publicWithinProtected.
+    // IEBC internal staff (admin / iebc_staff) bypass this gate entirely —
+    // they use Phantom as internal tooling and always have full Platinum access.
     if (effectivePathname.startsWith('/accounting') && session) {
       try {
-        const { data: sub } = await supabase
-          .from('subscriptions')
-          .select('status')
-          .eq('user_id', session.user.id)
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
           .single()
-        const ACTIVE_STATUSES = ['active', 'trialing', 'past_due']
-        if (!sub || !ACTIVE_STATUSES.includes(sub.status)) {
-          return NextResponse.redirect(new URL('/accounting/checkout?required=1', request.url))
+        const isInternalUser = profile?.role === 'admin' || profile?.role === 'iebc_staff'
+        if (!isInternalUser) {
+          const { data: sub } = await supabase
+            .from('subscriptions')
+            .select('status')
+            .eq('user_id', session.user.id)
+            .single()
+          const ACTIVE_STATUSES = ['active', 'trialing', 'past_due']
+          if (!sub || !ACTIVE_STATUSES.includes(sub.status)) {
+            return NextResponse.redirect(new URL('/accounting/checkout?required=1', request.url))
+          }
         }
       } catch {
         // Subscription check failed — fail open so a DB hiccup doesn't lock users out
