@@ -93,6 +93,14 @@ const fmt = (n: number) =>
 
 type EnrichedInvoice = Invoice & { balance: number; daysOverdue: number }
 
+function getBucket(daysOverdue: number): AgingBucket {
+  if (daysOverdue <= 0) return BUCKETS[0]
+  if (daysOverdue <= 30) return BUCKETS[1]
+  if (daysOverdue <= 60) return BUCKETS[2]
+  if (daysOverdue <= 90) return BUCKETS[3]
+  return BUCKETS[4]
+}
+
 export default function AgedReceivablesPage() {
   const [invoices, setInvoices] = useState<EnrichedInvoice[]>([])
   const [loading, setLoading] = useState(true)
@@ -153,6 +161,7 @@ export default function AgedReceivablesPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {toastId && (
+        <div className="fixed top-4 right-4 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-xl shadow-lg text-sm font-medium animate-in slide-in-from-right">
         <div className="fixed top-4 right-4 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-xl shadow-lg text-sm font-medium">
           Reminder sent to client
         </div>
