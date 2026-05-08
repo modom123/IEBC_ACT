@@ -18,7 +18,8 @@ const NAV: { title: string; items: NavItem[] }[] = [
   {
     title: 'Dashboard',
     items: [
-      { href: '/accounting', icon: '◈', label: 'Overview', exact: true, minPlan: 1 },
+      { href: '/accounting',        icon: '◈', label: 'Overview',            exact: true, minPlan: 1 },
+      { href: '/accounting/connect',icon: '🏦', label: 'Bank & Card Connect',             minPlan: 1 },
     ],
   },
   {
@@ -43,7 +44,6 @@ const NAV: { title: string; items: NavItem[] }[] = [
     title: 'Banking & Books',
     items: [
       { href: '/accounting/reconcile', icon: '⇌', label: 'Reconciliation',    minPlan: 2 },
-      { href: '/accounting/connect',   icon: '⬡', label: 'Bank Connect',      minPlan: 2 },
       { href: '/accounting/ledger',    icon: '⊞', label: 'General Ledger',    minPlan: 3 },
       { href: '/accounting/coa',       icon: '≡', label: 'Chart of Accounts', minPlan: 3 },
       { href: '/accounting/journal',   icon: '⊟', label: 'Journal Entries',   minPlan: 3 },
