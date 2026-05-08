@@ -4,6 +4,48 @@ import Anthropic from '@anthropic-ai/sdk'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
+// Monthly scan limits per plan (null = unlimited)
+const PLAN_LIMITS: Record<string, number | null> = {
+  silver:   20,
+  gold:     100,
+  platinum: null,
+}
+
+export async function GET() {
+  // Return current usage + limit for the authenticated user
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return NextResponse.json({ error: 'Service unavailable' }, { status: 503 })
+  }
+  const supabase = createServerSupabaseClient()
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const userId = session.user.id
+  const scanMonth = new Date().toISOString().slice(0, 7)
+
+  const [{ data: profile }, { data: sub }] = await Promise.all([
+    supabase.from('profiles').select('role').eq('id', userId).single(),
+    supabase.from('subscriptions').select('plan, status').eq('user_id', userId).maybeSingle(),
+  ])
+
+  const isInternal = profile?.role === 'admin' || profile?.role === 'iebc_staff'
+  const plan = sub?.plan ?? 'silver'
+  const limit = isInternal ? null : (PLAN_LIMITS[plan] ?? 20)
+
+  // Count this month's scans (fail open if table doesn't exist yet)
+  let used = 0
+  try {
+    const { count } = await supabase
+      .from('scanner_logs')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('scan_month', scanMonth)
+    used = count ?? 0
+  } catch { /* table may not exist yet */ }
+
+  return NextResponse.json({ used, limit, plan, isInternal })
+}
+
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif']
 const IMAGE_LIMIT = 10 * 1024 * 1024
 const PDF_LIMIT   = 20 * 1024 * 1024
@@ -70,6 +112,35 @@ export async function POST(req: NextRequest) {
   const supabase = createServerSupabaseClient()
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const userId = session.user.id
+  const scanMonth = new Date().toISOString().slice(0, 7)
+
+  // ── Plan limit check ──────────────────────────────────────────────
+  try {
+    const [{ data: profile }, { data: sub }] = await Promise.all([
+      supabase.from('profiles').select('role').eq('id', userId).single(),
+      supabase.from('subscriptions').select('plan, status').eq('user_id', userId).maybeSingle(),
+    ])
+    const isInternal = profile?.role === 'admin' || profile?.role === 'iebc_staff'
+    if (!isInternal) {
+      const plan = sub?.plan ?? 'silver'
+      const monthlyLimit = PLAN_LIMITS[plan] ?? 20
+      if (monthlyLimit !== null) {
+        const { count } = await supabase
+          .from('scanner_logs')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .eq('scan_month', scanMonth)
+        if ((count ?? 0) >= monthlyLimit) {
+          return NextResponse.json({
+            error: `You've used all ${monthlyLimit} scans for this month on the ${plan.charAt(0).toUpperCase() + plan.slice(1)} plan. Upgrade for more scans.`,
+            limit_reached: true, used: count, limit: monthlyLimit, plan,
+          }, { status: 429 })
+        }
+      }
+    }
+  } catch { /* fail open if table not yet created */ }
 
   try {
     const formData = await req.formData()
@@ -149,6 +220,14 @@ export async function POST(req: NextRequest) {
     const financialTypes = ['receipt', 'invoice', 'bill', 'bank_statement', 'purchase_order', 'estimate', 'payroll', 'tax_form']
     const docType = String(extracted.document_type || 'other')
     const isFinancial = financialTypes.includes(docType)
+
+    // Log the scan for usage tracking (non-blocking, fail silently)
+    supabase.from('scanner_logs').insert({
+      user_id:       userId,
+      scan_month:    scanMonth,
+      document_type: docType,
+      file_name:     file.name,
+    }).then(() => {}).catch(() => {})
 
     return NextResponse.json({
       // Universal

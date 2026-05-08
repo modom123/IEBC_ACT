@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import AccountingShell from '@/components/AccountingShell'
 
 type ScanResult = {
@@ -51,7 +51,15 @@ export default function ScannerPage() {
   const [error,     setError]     = useState('')
   const [fileName,  setFileName]  = useState('')
   const [posted,    setPosted]    = useState<string | null>(null)
+  const [usage,     setUsage]     = useState<{ used: number; limit: number | null; plan: string; isInternal: boolean } | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    fetch('/api/accounting/scanner')
+      .then(r => r.json())
+      .then(d => { if (!d.error) setUsage(d) })
+      .catch(() => {})
+  }, [result])
 
   const scan = useCallback(async (file: File) => {
     setResult(null); setError(''); setPosted(null); setFileName(file.name)
@@ -61,6 +69,10 @@ export default function ScannerPage() {
       fd.append('file', file)
       const res  = await fetch('/api/accounting/scanner', { method: 'POST', body: fd })
       const data = await res.json()
+      if (res.status === 429 && data.limit_reached) {
+        setError(data.error)
+        return
+      }
       if (!res.ok || data.error) { setError(data.error || 'Scan failed. Please try again.'); return }
       setResult(data)
     } finally { setScanning(false) }
@@ -123,9 +135,40 @@ export default function ScannerPage() {
       <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
 
         {/* Header */}
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">✦ AI Document Scanner</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Upload any document — receipts, invoices, contracts, IDs, PDFs — and AI extracts all relevant data</p>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">✦ AI Document Scanner</h1>
+            <p className="text-sm text-gray-400 mt-0.5">Upload any document — receipts, invoices, contracts, IDs, PDFs — and AI extracts all relevant data</p>
+          </div>
+          {usage && (
+            <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 shadow-sm min-w-[180px]">
+              {usage.isInternal || usage.limit === null ? (
+                <div>
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Scans</p>
+                  <p className="text-sm font-bold text-green-700 mt-0.5">Unlimited</p>
+                  <p className="text-xs text-gray-400">{usage.used} used this month</p>
+                </div>
+              ) : (
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Scans this month</p>
+                    <span className="text-xs font-bold text-[#0F4C81] capitalize">{usage.plan}</span>
+                  </div>
+                  <div className="flex items-baseline gap-1 mb-1.5">
+                    <span className={`text-xl font-bold ${usage.used >= usage.limit ? 'text-red-600' : 'text-gray-800'}`}>{usage.used}</span>
+                    <span className="text-xs text-gray-400">/ {usage.limit}</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full transition-all ${usage.used >= usage.limit ? 'bg-red-500' : usage.used / usage.limit > 0.8 ? 'bg-orange-400' : 'bg-[#0F4C81]'}`}
+                      style={{ width: `${Math.min(100, (usage.used / usage.limit) * 100)}%` }} />
+                  </div>
+                  {usage.used >= usage.limit && (
+                    <a href="/accounting/checkout" className="block mt-2 text-xs text-[#0F4C81] font-semibold hover:underline">Upgrade for more →</a>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Upload Zone */}
