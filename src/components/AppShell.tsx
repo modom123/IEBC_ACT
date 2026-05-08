@@ -64,6 +64,7 @@ const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
       { href: '/accounting/payroll',      icon: '◫', label: 'Payroll' },
       { href: '/accounting/tax',          icon: '💸', label: 'Tax Center' },
       { href: '/accounting/bills',        icon: '▥', label: 'Bills & Payables' },
+      { href: '/accounting/ledger',       icon: '⊞', label: 'General Ledger' },
     ],
   },
 ]
@@ -241,12 +242,14 @@ export default function AppShell({ user, children }: { user?: User; children: Re
             )}
           </Link>
 
-          <Link
-            href="/accounting/checkout"
-            className="text-[11px] sm:text-[13px] bg-[#C8902A] hover:bg-[#b07820] text-white px-2 sm:px-3 py-1.5 rounded-lg font-semibold transition shadow-sm whitespace-nowrap"
-          >
-            ★ Upgrade
-          </Link>
+          {user?.role !== 'admin' && user?.role !== 'iebc_staff' && (
+            <Link
+              href="/accounting/checkout"
+              className="text-[11px] sm:text-[13px] bg-[#C8902A] hover:bg-[#b07820] text-white px-2 sm:px-3 py-1.5 rounded-lg font-semibold transition shadow-sm whitespace-nowrap"
+            >
+              ★ Upgrade
+            </Link>
+          )}
         </header>
 
         <div className="flex-1 overflow-y-auto">{children}</div>
